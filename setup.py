@@ -5,10 +5,7 @@ setup.py
 
 Created by Patrick Shaner on 2019-08-14.
 
-Copyright (c) 2019 Quest Analytics Inc., All rights reserved
-THE INFORMATION CONTAINED HEREIN IS PROPRIETARY AND CONFIDENTIAL
-TO Quest Analytics, INC. USE, REPRODUCTION, OR DISCLOSURE IS SUBJECT TO PRE-APPROVAL
-BY Quest Analytics, INC.
+Copyright (c) 2019 Patrick Shaner
 
 Setup process for S3 Parquet reader
 
@@ -25,7 +22,7 @@ with open('requirements.txt') as f:
 setup(
     # Needed to silence warnings (and to be a worthwhile package)
     name='parquet_read',
-    version='0.1',
+    version='1.0',
     url='https://github.com/pshaner982/s3_parquet_reader',
     author="Patrick Shaner and Zach Schumacher",
     author_email='patrick.shaner@questanalytics',

@@ -5,10 +5,7 @@ reader.py
 
 Created by Patrick Shaner on 2019-08-14.
 
-Copyright (c) 2019 Quest Analytics Inc., All rights reserved
-THE INFORMATION CONTAINED HEREIN IS PROPRIETARY AND CONFIDENTIAL
-TO Quest Analytics, INC. USE, REPRODUCTION, OR DISCLOSURE IS SUBJECT TO PRE-APPROVAL
-BY Quest Analytics, INC.
+Copyright (c) 2019 Patrick Shaner
 
 Reads parquet data from S3, saving data to json files in local file system
 
@@ -60,6 +57,7 @@ class Connection:
     _s3_connection = None                                   # Connection to S3 leveraging Boto3
     _download_process = None                                # Download object
     _json_process = None                                    # Parquet reader object
+    _full_download_path = None                              # S3 Bucket and URI combined used in S3FS
 
     def __init__(self, uri: str, bucket=None, access_key=None, secret_key=None, destination_dir=None) -> None:
         """
@@ -76,6 +74,7 @@ class Connection:
         self._set_s3_secret_key(secret_key)
         self._set_json_destination_directory(destination_dir)
         self._create_connection()
+        self._full_download_path = os.path.join(self._bucket, self._uri)
 
     @property
     def parent_destination_path(self):
@@ -93,6 +92,10 @@ class Connection:
         return self._json_process.json_directory
 
     @property
+    def parquet_data_frame(self):
+        return self._json_process.data_frame
+
+    @property
     def test_connection(self) -> bool:
         """
         Validates all setting and that path is reachable in S3 before starting to download
@@ -107,20 +110,29 @@ class Connection:
         Downloads the parquet files and then leverages pyspark to create JSON files
         :return: None
         """
-        full_download_path = os.path.join(self._bucket, self._uri)
-
-        if self.test_connection:
-            self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
-                                                            full_download_path)
-            if self._download_process.download_parquet_files:
-                self._json_process = read_parquet.ReadParquet(self._download_process.destination_path,
-                                                              self.parent_destination_path)
-                self._json_process.read_directory_generate_raw_jsons()
-            else:
-                raise S3ConnectionError("Unable to convert the parquet data into JSON's because "
-                                        "not all files downloaded successfully")
+        self._create_download_obj_and_download_file()
+        if self._download_process.successfully_downloaded:
+            self._json_process = read_parquet.ReadParquet(self._download_process.destination_path,
+                                                          self.parent_destination_path)
+            self._json_process.read_directory_generate_raw_jsons()
         else:
-            raise S3ConnectionError(f"Unable to download {full_download_path} because connection to S3 is not valid")
+            raise S3ConnectionError(f"Unable to download convert downloaded files to JSON because files "
+                                    f"did not successfully download all files")
+
+    def download_and_get_data_frame(self) -> None:
+        """
+        Downloads the parquet files and then leverages pyspark to create JSON files
+        :return: None
+        """
+        self._create_download_obj_and_download_file()
+
+        if self._download_process.successfully_downloaded:
+            self._json_process = read_parquet.ReadParquet(self._download_process.destination_path,
+                                                          self.parent_destination_path)
+
+        else:
+            raise S3ConnectionError(f"Unable to create data frame because files "
+                                    f"did not successfully download all files")
 
     def _create_connection(self):
         """
@@ -184,6 +196,22 @@ class Connection:
             if not os.path.exists(destination_dir):
                 os.makedirs(destination_dir, exist_ok=True)
             self._destination_dir = destination_dir
+
+    def _create_download_obj_and_download_file(self) -> None:
+        """
+        Creates self._download process and downloads the file from S3
+        :return: None
+        """
+        if self.test_connection:
+            try:
+                self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
+                                                                self._full_download_path)
+                self._download_process.download_files_from_s3()
+            except download.DownloadError as dwn_error:
+                raise S3ConnectionError(f"Failed to download files from S3 because {dwn_error}")
+        else:
+            raise S3ConnectionError(f"Unable to download {self._full_download_path} because "
+                                    f"connection to S3 is not valid")
 
     @staticmethod
     def _set_s3_access_key(access_key) -> None:
