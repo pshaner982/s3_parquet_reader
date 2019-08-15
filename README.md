@@ -32,7 +32,7 @@ Class takes the following parameters:
 4. param secret_key: Secret key to connect to S3 read from env variable "S3_SECRET" 
 5. param destination_dir: Directory to write JSON's to, default is <date_time>_JSON located in this directory
 
-####Recommendations
+###Recommendations
 Set the following environment variables instead of leveraging class variables
 ```
   S3_ACCESS                 # S3 Access key
@@ -43,14 +43,14 @@ Set the following environment variables instead of leveraging class variables
 
 Once class has been initialized call method download_and_convert_to_json convert the parquet data into JSON data
 
-####Example:
+###Example:
 ```
 path = "agg_files/historical/DocObject7.parquet"
 tmp = Connection(path)
 tmp.download_and_convert_to_json()
 ```
 
-####Other Useful Properties:
+###Other Useful Properties:
 Ensures that the URI passed in actually exist returning a boolean
 ```
 tmp.test_connection

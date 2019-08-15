@@ -5,10 +5,7 @@ read_parquet.py
 
 Modified by Patrick Shaner on 2019-08-14.
 
-Copyright (c) 2019 Quest Analytics Inc., All rights reserved
-THE INFORMATION CONTAINED HEREIN IS PROPRIETARY AND CONFIDENTIAL
-TO Quest Analytics, INC. USE, REPRODUCTION, OR DISCLOSURE IS SUBJECT TO PRE-APPROVAL
-BY Quest Analytics, INC.
+Copyright (c) 2019 Patrick Shaner
 
 Reads a parquet file from local storage and converts to JSON files
 
@@ -34,7 +31,7 @@ class ReadParquet(object):
     Reads a parquet directory created from Spark and converts into a directory of JSON files.
 
     ::Usage::
-    tmp_file = "~/Downloads/preAggregatedDoctorPracticeBetterdoctorTempDF.parquet"
+    tmp_file = "~/Downloads/TempDF.parquet"
     tmp = ReadParquet(tmp_file)
     tmp.process_parquet_directory()
 
@@ -57,6 +54,8 @@ class ReadParquet(object):
         """
         self._set_parquet_dir(parquet_dir)
         self._set_tmp_dir(parent_dir)
+        self._create_spark_session()
+        self._create_sql_context_and_data_frame()
 
     @property
     def json_directory(self) -> str:
@@ -66,14 +65,21 @@ class ReadParquet(object):
         """
         return self._json_dir
 
-    def read_directory_generate_raw_jsons(self) -> None:
+    @property
+    def data_frame(self):
+        return self._data_frame
+
+    def read_directory_generate_raw_jsons(self, with_nulls=False) -> None:
         """
         Main call point for class, reads the parquet file and generates the data
+        :param with_nulls: Will replace null values with ''
         :return: None
         """
-        self._create_spark_session()
-        self._create_sql_context()
-        self._read_parquet_and_create_json_files()
+        if with_nulls:
+            # adds "" for null values in data frame
+            self._data_frame.na.fill("").write.json(self._json_dir)
+        else:
+            self._data_frame.write.json(self._json_dir)
 
     def _create_spark_session(self) -> None:
         """
@@ -87,23 +93,14 @@ class ReadParquet(object):
             'spark.driver.maxResultSize', '10g').config(
             'spark.driver.memory', '10g').config('spark.debug.maxToStringFields', "500000").getOrCreate()
 
-    def _create_sql_context(self) -> None:
+    def _create_sql_context_and_data_frame(self) -> None:
         """
         Creates the sql context for Spark
         :return: None
         """
         sc = self._spark.sparkContext
-        # sc.setLogLevel("DEBUG")
         self._sql_context = SQLContext(sc)
-
-    def _read_parquet_and_create_json_files(self) -> None:
-        """
-        Creates data frame from parquet directory
-        :return: None
-        """
         self._data_frame = self._sql_context.read.parquet(self._par_dir)
-        self._data_frame.write.json(self._json_dir)
-        # self._data_frame.na.fill("").write.json(self._json_dir)  # adds "" for null values in data frame
 
     def _set_parquet_dir(self, par_dir: str) -> None:
         """

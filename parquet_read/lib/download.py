@@ -6,10 +6,7 @@ download.py
 Created by Zach Schumacher on 2019-08-14.
 Modified by Patrick Shaner on 2019-08-14.
 
-Copyright (c) 2019 Quest Analytics Inc., All rights reserved
-THE INFORMATION CONTAINED HEREIN IS PROPRIETARY AND CONFIDENTIAL
-TO Quest Analytics, INC. USE, REPRODUCTION, OR DISCLOSURE IS SUBJECT TO PRE-APPROVAL
-BY Quest Analytics, INC.
+Copyright (c) 2019 Patrick Shaner
 
 Downloads data files from S3 file to local storage
 
@@ -72,12 +69,11 @@ class ParquetFromS3:
         return self._destination_path
 
     @property
-    def download_parquet_files(self) -> bool:
+    def successfully_downloaded(self) -> bool:
         """
-        Validates that all files located in S3 successfully downloaded to local disk
+        Validates that all files expected to be downloaded actually download
         :return: bool
         """
-        self._create_process_list()
         found_all_results = True
 
         for file_name in self._files_to_download:
@@ -88,7 +84,11 @@ class ParquetFromS3:
 
         return found_all_results
 
-    def _create_process_list(self):
+    def download_files_from_s3(self) -> None:
+        """
+        Validates that all files located in S3 successfully downloaded to local disk
+        :return: None
+        """
         processes = []
         for i in range(self._num_of_processes):
             p = Process(target=self._download_single_file, args=(self._queue,))
