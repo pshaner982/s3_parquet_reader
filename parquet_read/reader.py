@@ -21,7 +21,7 @@ import s3fs
 import tempfile
 import datetime
 
-from parquet_read._lib import download, read_parquet
+from parquet_read.lib import download, read_parquet
 
 __all__ = ["Connection"]
 
