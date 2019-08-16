@@ -202,13 +202,20 @@ class Connection:
         Creates self._download process and downloads the file from S3
         :return: None
         """
+        total_tries = 3
         if self.test_connection:
-            try:
-                self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
-                                                                self._full_download_path)
-                self._download_process.download_files_from_s3()
-            except download.DownloadError:
-                self._download_process.download_files_from_s3()
+            while total_tries != 0:
+                try:
+                    self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
+                                                                    self._full_download_path)
+                    self._download_process.download_files_from_s3()
+                    break
+                except download.DownloadError:
+                    self._download_process.download_files_from_s3()
+                    total_tries -= 1
+
+            if total_tries == 0:
+                raise S3ConnectionError(f"Unable to download {self._full_download_path} after attempting 3 times")
         else:
             raise S3ConnectionError(f"Unable to download {self._full_download_path} because "
                                     f"connection to S3 is not valid")
