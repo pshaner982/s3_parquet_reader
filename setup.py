@@ -27,7 +27,7 @@ setup(
     author="Patrick Shaner and Zach Schumacher",
     author_email='patrick.shaner@questanalytics',
     # Needed to actually package something
-    packages=['parquet_read'],
+    packages=['parquet_read', "parquet_read.lib"],
     # Needed for dependencies
     install_requires=[required],
     # The license can be anything you like
