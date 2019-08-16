@@ -20,6 +20,7 @@ import os
 import s3fs
 
 from multiprocessing import Process, Queue, cpu_count
+from urllib3.connection import NewConnectionError
 
 
 class DownloadError(Exception):
@@ -143,10 +144,13 @@ class ParquetFromS3:
                 os.mkdir(self._destination_path)
 
     def _download_single_file(self, queue):
-        while not queue.empty():
-            path = queue.get()
-            filename = os.path.basename(path)
-            _target_path = os.path.join(self._destination_path, filename)
+        try:
+            while not queue.empty():
+                path = queue.get()
+                filename = os.path.basename(path)
+                _target_path = os.path.join(self._destination_path, filename)
 
-            with self._connection.open(path, 'rb') as remote_file, open(_target_path, 'wb') as local_file:
-                local_file.write(remote_file.read())
+                with self._connection.open(path, 'rb') as remote_file, open(_target_path, 'wb') as local_file:
+                    local_file.write(remote_file.read())
+        except NewConnectionError as con:
+            raise DownloadError(f"Failed to complete downloading because {con}")

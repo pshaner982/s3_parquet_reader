@@ -207,8 +207,8 @@ class Connection:
                 self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
                                                                 self._full_download_path)
                 self._download_process.download_files_from_s3()
-            except download.DownloadError as dwn_error:
-                raise S3ConnectionError(f"Failed to download files from S3 because {dwn_error}")
+            except download.DownloadError:
+                self._download_process.download_files_from_s3()
         else:
             raise S3ConnectionError(f"Unable to download {self._full_download_path} because "
                                     f"connection to S3 is not valid")
