@@ -143,7 +143,7 @@ class Connection:
         secret = os.getenv("S3_SECRET", None)
 
         if key and secret:
-            self._s3_connection = s3fs.S3FileSystem()
+            self._s3_connection = s3fs.S3FileSystem(key=key, secret=secret)
         else:
             raise S3ConnectionError("Unable to make connection to S3 because required "
                                     "environment variables are not set")
