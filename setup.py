@@ -22,7 +22,7 @@ with open('requirements.txt') as f:
 setup(
     # Needed to silence warnings (and to be a worthwhile package)
     name='parquet_read',
-    version='1.1.2',
+    version='1.1.3',
     url='https://github.com/pshaner982/s3_parquet_reader',
     author="Patrick Shaner and Zach Schumacher",
     author_email='patrick.shaner@questanalytics',
