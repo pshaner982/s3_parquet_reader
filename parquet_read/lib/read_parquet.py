@@ -86,8 +86,6 @@ class ReadParquet(object):
         Ensures all the environment variables are set as needed. Creates the spark connection
         :return:
         """
-        os.environ["HADOOP_OPTS"] = "$HADOOP_OPTS -Djava.library.path=$HADOOP_HOME/lib/native"
-        os.environ["JAVA_HOME"] = "/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
         self._spark = SparkSession.builder.master('local').appName('myAppName').config(
             'spark.executor.memory', '10g').config("spark.cores.max", "4").config(
             'spark.driver.maxResultSize', '10g').config(
