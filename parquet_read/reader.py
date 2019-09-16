@@ -213,7 +213,11 @@ class Connection:
                     self._download_process = download.ParquetFromS3(self._s3_connection, self.parent_destination_path,
                                                                     self._full_download_path)
                     self._download_process.download_files_from_s3()
-                    break
+
+                    if self._download_process.successfully_downloaded:
+                        break
+                    else:
+                        total_tries -= 1
                 except download.DownloadError:
                     self._download_process.download_files_from_s3()
                     total_tries -= 1

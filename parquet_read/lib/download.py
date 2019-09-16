@@ -82,6 +82,9 @@ class ParquetFromS3:
             if not os.path.exists(final_path):
                 found_all_results = False
                 break
+            if os.path.getsize(final_path) <= 1:
+                found_all_results = False
+                break
 
         return found_all_results
 
