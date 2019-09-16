@@ -141,6 +141,10 @@ class Connection:
         """
         key = os.getenv("S3_ACCESS", None)
         secret = os.getenv("S3_SECRET", None)
+        java_home = os.getenv("JAVA_HOME", None)
+
+        if not java_home:
+            raise S3ConnectionError("JAVA_HOME env variable is not set this will cause connection to fail")
 
         if key and secret:
             self._s3_connection = s3fs.S3FileSystem(key=key, secret=secret)

@@ -123,7 +123,7 @@ class ParquetFromS3:
             secret = os.getenv("S3_SECRET", None)
 
             if key and secret:
-                self._connection = s3fs.S3FileSystem()
+                self._connection = s3fs.S3FileSystem(key=key, secret=secret)
             else:
                 raise DownloadError("Unable to make connection to S3 because required "
                                     "environment variables are not set")
